@@ -1,0 +1,24 @@
+node('built-in') 
+{
+    stage('Continuous Download')
+    {
+   git 'https://github.com/OmkarAnk/maven.git'
+    }
+    stage('Continuous Build')
+    {
+    sh 'mvn package'
+    }
+     stage('Continuous Deploy')
+    {
+    deploy adapters: [tomcat9(credentialsId: '9f6c9a22-e925-4175-a068-6762a30e6b13', path: '', url: 'http://172.31.25.68:8080')], contextPath: 'test', war: '**/*.war'
+    }
+     stage('Continuous Testing')
+    {
+    git 'https://github.com/OmkarAnk/Functional_testing.git'
+    sh 'java -jar /home/ubuntu/.jenkins/workspace/pipeline2/testing.jar'
+    }
+     stage('Continuous Delivery')
+    {
+   deploy adapters: [tomcat9(credentialsId: 'e5a5261b-387c-407a-a916-9ee940017e09', path: '', url: 'http://172.31.20.225:8080')], contextPath: 'prod', war: '**/*.war'
+    }
+}
