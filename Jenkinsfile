@@ -1,57 +1,44 @@
-pipeline
+node('built-in') 
 {
-    agent any
-    stages
+    stage('Continuous download')
+
     {
-        stage('ContinuousDownload')
+        try
         {
-            steps
-            {
-                git 'https://github.com/intelliqittrainings/maven.git'
-            }
+        git 'https://github.com/OmkarAnk/maven.git'
         }
-        stage('ContinuousBuild')
+        catch (Exception e1)
         {
-            steps
-            {
-                sh 'mvn package'
-            }
+            mail bcc: '', body: 'Jenkins is unable to code from git repository', cc: '', from: '', replyTo: '', subject: 'Download failed', to: 'gitadmin@gmail.com'
+            exit(1)
         }
-        stage('ContinuousDeployment')
-        {
-            steps
-            {
-               deploy adapters: [tomcat9(credentialsId: 'bfb67f1d-2f4e-430c-bb8d-30584116bd00', path: '', url: 'http://172.31.51.212:9090')], contextPath: 'test1', war: '**/*.war'
-            }
-        }
-        stage('ContinuousTesting')
-        {
-            steps
-            {
-               git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
-               sh 'java -jar /home/ubuntu/.jenkins/workspace/DeclarativePipeline1/testing.jar'
-            }
-        }
-       
     }
     
-    post
+    stage('Continuous Build') 
     {
-        success
+        try
         {
-            input message: 'Need approval from the DM!', submitter: 'srinivas'
-               deploy adapters: [tomcat9(credentialsId: 'bfb67f1d-2f4e-430c-bb8d-30584116bd00', path: '', url: 'http://172.31.50.204:9090')], contextPath: 'prod1', war: '**/*.war'
+        sh 'mvn package'
         }
-        failure
+        catch (Exception e2)
         {
-            mail bcc: '', body: 'Continuous Integration has failed', cc: '', from: '', replyTo: '', subject: 'CI Failed', to: 'selenium.saikrishna@gmail.com'
+            mail bcc: '', body: 'Jenkins is unable to build the code', cc: '', from: '', replyTo: '', subject: 'Build failed', to: 'dev@gmail.com'
+            exit(1)
         }
-       
     }
-    
-    
-    
-  
+    stage('Continuous Deploy') 
+    {
+        deploy adapters: [tomcat9(credentialsId: 'c755d822-93a6-499b-9a8c-875b2afb3aae', path: '', url: 'http://172.31.42.1:8080')], contextPath: 'test', war: '**/*.war'
+    }
+     stage('Continuous testing') 
+    {
+        git 'https://github.com/OmkarAnk/Functional_testing.git'
+        sh 'java -jar /home/ubuntu/.jenkins/workspace/test/testing.jar'
+    }
+    stage('Continuous delivery') 
+    {
+       deploy adapters: [tomcat9(credentialsId: 'c755d822-93a6-499b-9a8c-875b2afb3aae', path: '', url: 'http://172.31.42.143:8080')], contextPath: 'prod', war: '**/*.war'
+    }
     
     
 }
