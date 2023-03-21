@@ -1,64 +1,65 @@
 node('built-in') 
 {
-    stage('Continuous download') 
+    stage('Continuous download')
     {
         try
         {
             git 'https://github.com/OmkarAnk/maven.git'
-        }   
-        catch (Exception e1)
+        }
+        catch(Exception e1)
         {
-            mail bcc: '', body: 'Jenkins is unable to download the code', cc: '', from: '', replyTo: '', subject: 'Continuous download failed', to: 'gitadmin@gmail.com'
+            mail bcc: '', body: 'Jenkins is unable to download the code from git repository.', cc: '', from: '', replyTo: '', subject: 'Continuous download failed', to: 'gitadmin@gmail.com'
             exit(1)
         }
     }
-    stage('Continuous build') 
+    stage('Continuous build')
     {
         try
         {
             sh 'mvn package'
-        }   
-        catch (Exception e2)
+        }
+        catch(Exception e2)
         {
-            mail bcc: '', body: 'Jenkins is unable to build the code', cc: '', from: '', replyTo: '', subject: 'Continuous download failed', to: 'gitadmin@gmail.com'
+            mail bcc: '', body: 'Jenkins is unable to build the code.', cc: '', from: '', replyTo: '', subject: 'Continuous build failed', to: 'devteam@gmail.com'
             exit(1)
         }
     }
-    stage('Continuous deploy') 
+    stage('Continuous deploy')
     {
         try
         {
-            deploy adapters: [tomcat9(credentialsId: 'bed67ebe-4439-4af0-8718-5f01b09abdda', path: '', url: 'http://172.31.35.127:8080')], contextPath: 'test', war: '**/*.war'
-        }   
-        catch (Exception e3)
+            deploy adapters: [tomcat9(credentialsId: '5fc8d8ff-eecc-4a9a-b5c4-8ec30db32dd0', path: '', url: 'http://172.31.5.154:8080')], contextPath: 'test', war: '**/*.war'
+        }
+        catch(Exception e3)
         {
-            mail bcc: '', body: 'Jenkins is deploy to the artifact', cc: '', from: '', replyTo: '', subject: 'Continuous deployment failed', to: 'gitadmin@gmail.com'
+            mail bcc: '', body: 'Jenkins is unable to deploy the code on qa server.', cc: '', from: '', replyTo: '', subject: 'Continuous build failed', to: 'middlewareteam@gmail.com'
             exit(1)
         }
     }
-    stage('Continuous test') 
+    stage('Continuous testing')
     {
         try
         {
-          git 'https://github.com/OmkarAnk/Functional_testing.git'
-          sh 'java -jar /home/ubuntu/.jenkins/workspace/demo/testing.jar'
-        }   
-        catch (Exception e4)
+            git 'https://github.com/OmkarAnk/Functional_testing.git'
+            sh 'java -jar /home/ubuntu/.jenkins/workspace/trail1/testing.jar'
+        }
+        catch(Exception e4)
         {
-            mail bcc: '', body: 'testing failed', cc: '', from: '', replyTo: '', subject: 'Continuous testing failed', to: 'gitadmin@gmail.com'
+            mail bcc: '', body: 'Jenkins is unable to test the code on qa server.', cc: '', from: '', replyTo: '', subject: 'Continuous build failed', to: 'qaeam@gmail.com'
             exit(1)
         }
     }
-    stage('Continuous delivery') 
+    stage('Continuous delivery')
     {
         try
         {
-          deploy adapters: [tomcat9(credentialsId: 'bed67ebe-4439-4af0-8718-5f01b09abdda', path: '', url: 'http://172.31.45.26:8080')], contextPath: 'prod', war: '**/*.war'
-        }   
-        catch (Exception e5)
+            deploy adapters: [tomcat9(credentialsId: '5fc8d8ff-eecc-4a9a-b5c4-8ec30db32dd0', path: '', url: 'http://172.31.10.75:8080')], contextPath: 'prod', war: '**/*.war'
+        }
+        catch(Exception e5)
         {
-            mail bcc: '', body: 'continuous delivery failed', cc: '', from: '', replyTo: '', subject: 'Continuous testing failed', to: 'gitadmin@gmail.com'
+            mail bcc: '', body: 'Jenkins is unable to deliver the code on prod server.', cc: '', from: '', replyTo: '', subject: 'Continuous delivery failed', to: 'delivery@gmail.com'
             exit(1)
         }
     }
+     
 }
